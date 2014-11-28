@@ -1,0 +1,9 @@
+# ignore dependencies
+vendor/
+
+# ignore lock file
+composer.lock
+
+# ignore api documentation cache and build files
+build/
+cache/
