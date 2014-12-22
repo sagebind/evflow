@@ -6,7 +6,7 @@
 Evflow (/ˈɛvfloʊ/) is an open and extensible event loop library for asynchronous programming in PHP. It is taken from many lessons learned from other attempts at asynchronous programming in PHP, especially from [ReactPHP](http://reactphp.org). Evflow is currently an experiment, and will be changed constantly as new ideas take form.
 
 ## Usage
-Here is how to use the current version of the code if you want to play around. The following code does an operation after 2 seconds, another after 15 seconds, gets a line of input from the console, and downloads a slow webpage, all concurrently. You can type in a line of input at any point during the program and it will be successfuly and immediately captured.
+Here is how to use the current version of the code if you want to play around. The following code does an operation after 2 seconds, another after 15 seconds, gets a line of input from the console, and downloads a slow web page, all concurrently. You can type in a line of input at any point during the program and it will be successfully and immediately captured.
 
 ```php
 <?php
@@ -50,9 +50,9 @@ if ($socket = fsockopen('fake-response.appspot.com', 80, $errno, $errstr, 30)) {
 When the project settles in and becomes more stable, ~100% unit test coverage will be a top priority. We're not there yet, so while you can run the test suite with `phpunit`, don't expect anything to be fully tested. :)
 
 ## Uses
-Evflow's pluggable architecture opens up tons of integration possibilities. Some asynchronous libraries exist for PHP, but most of them use their own event loops and retrofitting them use another would be difficult. To make asynchronous programming really work, tasks need to share the same event loop so that processing time is given fairly and correctly to all event callbacks.
+Evflow's pluggable architecture opens up tons of integration possibilities. Some asynchronous libraries exist for PHP, but most of them use their own event loops and retrofitting them to use another would be difficult. To make asynchronous programming really work, tasks need to share the same event loop so that processing time is given fairly and correctly to all event callbacks.
 
-Evflow aloows you to define your own types of asynchronous events. All that is required is the ability to implement a non-blocking `poll()` method for the event and it will work like magic. There are a number of such functions out there that unfortunately cannot really be used; until now. Some of these possibilities include:
+Evflow allows you to define your own types of asynchronous events. All that is required is the ability to implement a non-blocking `poll()` method for the event and it will work like magic. There are a number of such functions out there that unfortunately cannot really be used; until now. Some of these possibilities include:
 
 - Async stream I/O
 - Async HTTP requests using non-blocking sockets
@@ -66,7 +66,7 @@ The goal of this project is to (eventually) create a usable, stable, and fast ev
 - Using generators to make creating arbitrary async functions simpler and more powerful
     + Many ideas could be borrowed from Luke Hoban's excellent [Async Functions for ECMAScript](http://github.com/lukehoban/ecmascript-asyncawait) proposal.
     + Nikita Popov already wrote [an awesome article](http://nikic.github.io/2012/12/22/Cooperative-multitasking-using-coroutines-in-PHP.html) on using generators for multitasking. Many raw ideas should be borrowed from him.
-- Loop classes that use [libev](http://libev.schmorp.de), [libuv](https://github.com/joyent/libuv), or [libevent](http://libevent.org) as a backend to implement event handling
+- Loop classes that use [libev](http://libev.schmorp.de), [libuv](https://github.com/joyent/libuv), or [libevent](http://libevent.org) as a back-end to implement event handling
 - Synchronizing with event loops in other (forked) processes
     + Dealing with forks is easier with Kris Wallsmith's [Spork](https://github.com/kriswallsmith/spork) library.
 - Task workers using [pthreads](http://pthreads.org)
