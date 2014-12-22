@@ -47,7 +47,7 @@ if ($socket = fsockopen('fake-response.appspot.com', 80, $errno, $errstr, 30)) {
 ```
 
 ## Tests
-When the project settles in and becomes more stable, ~100% unit test coverage will be a top priority. We're not there yet, so while you can run the test suite with `phpunit`, don't expect everything to be fully tested. :)
+When the project settles in and becomes more stable, ~100% unit test coverage will be a top priority. We're not there yet, so while you can run the test suite with `phpunit`, don't expect anything to be fully tested. :)
 
 ## Uses
 Evflow's pluggable architecture opens up tons of integration possibilities. Some asynchronous libraries exist for PHP, but most of them use their own event loops and retrofitting them use another would be difficult. To make asynchronous programming really work, tasks need to share the same event loop so that processing time is given fairly and correctly to all event callbacks.
@@ -61,7 +61,7 @@ Evflow aloows you to define your own types of asynchronous events. All that is r
 - Async PostgreSQL using `pg_send_query()` and `pg_connection_busy()`
 
 ## Goals
-The goal of this project is to (eventually) create a usable, stable, and fast event loop system that is practical and useful in many kinds of applications. Unlike some libraries, Evflow is meant to be only an event library; it should do one thing, and one thing well. Relevant features could be added in the future beyond a basic event loop to make it more useful. Some things that are being looked into are:
+The goal of this project is to (eventually) create a usable, stable, and fast event loop system that is practical and useful in many kinds of applications. Unlike some libraries, Evflow is meant to be only an event library; it should do one thing, and one thing well. Relevant features could be added in the future beyond a basic event loop to make it more useful. Some things that should be or are being looked into are:
 
 - Using generators to make creating arbitrary async functions simpler and more powerful
     + Many ideas could be borrowed from Luke Hoban's excellent [Async Functions for ECMAScript](http://github.com/lukehoban/ecmascript-asyncawait) proposal.
