@@ -1,7 +1,7 @@
 # Evflow
 [![Latest Stable Version](http://img.shields.io/packagist/v/evflow/evflow.svg?style=flat)](https://packagist.org/packages/evflow/evflow)
+[![License](http://img.shields.io/badge/license-Apache--2.0-b57edc.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 ![Status](http://img.shields.io/badge/status-awesome-blue.svg?style=flat)
-[![License](http://img.shields.io/packagist/l/evflow/evflow.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 Evflow (/ˈɛvfloʊ/) is an open and extensible event loop library for asynchronous programming in PHP. It is taken from many lessons learned from other attempts at asynchronous programming in PHP, especially from [ReactPHP](http://reactphp.org). Evflow is currently an experiment, and will be changed constantly as new ideas take form.
 
@@ -13,9 +13,9 @@ Here is how to use the current version of the code if you want to play around. T
 use Evflow\TimerWatcher;
 use Evflow\StreamWatcher;
 
-function waitAsync(msec)
+function waitAsync($msec)
 {
-    return (new TimerWatcher(msec))->promise();
+    return (new TimerWatcher($msec))->promise();
 }
 
 waitAsync(2000)->then(function () {
@@ -71,6 +71,7 @@ The goal of this project is to (eventually) create a usable, stable, and fast ev
     + Dealing with forks is easier with Kris Wallsmith's [Spork](https://github.com/kriswallsmith/spork) library.
 - Task workers using [pthreads](http://pthreads.org)
 - POSIX process signals & interrupts
+- [The many excellent ideas](http://wiki.dlang.org/Event_system) the D language community has for their own language; some of which could be borrowed
 
 ## License
 All Evflow documentation and source code is licensed under the Apache License, Version 2.0 (Apache-2.0). See [LICENSE.md](LICENSE.md) for details.
