@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2014 Stephen Coakley <me@stephencoakley.com>
+ * Copyright 2015 Stephen Coakley <me@stephencoakley.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy
@@ -29,6 +29,13 @@ final class DefaultLoop
     private static $loopInstance;
 
     /**
+     * Indicates if the event loop should automatically begin running at the
+     * end of the current process' main code execution.
+     * @type boolean
+     */
+    private static $autoStart = true;
+
+    /**
      * Initializes the global event loop.
      *
      * By default the event loop will register itself to run just before the
@@ -36,19 +43,22 @@ final class DefaultLoop
      * used), then the loop will never get registered to run and won't disturb
      * normal execution flow at all.
      *
-     * @param  LoopInterface $loop [description]
-     * @return [type]              [description]
+     * @param  LoopInterface $loop The loop instance to use as the global event loop.
      */
     public static function init(LoopInterface $loop = null)
     {
-        self::$loopInstance = !!$loop ? $loop : new BaseEventLoop();
+        self::$loopInstance = !!$loop ? $loop : new PollEventLoop();
 
         // run the global event loop just before the program exits
-        register_shutdown_function([__CLASS__, 'run']);
+        register_shutdown_function(function () {
+            if (self::$autoStart) {
+                self::run();
+            }
+        });
     }
 
     /**
-     * Gets the default eent loop instance being used.
+     * Gets the default event loop instance being used.
      *
      * If the event loop has not been initialized it will be initialized with
      * default values.
@@ -64,9 +74,23 @@ final class DefaultLoop
     }
 
     /**
+     * Enables the automatic execution of the event loop at the end of the current thread.
+     */
+    public static function enableAutoStart()
+    {
+        self::$autoStart = true;
+    }
+
+    /**
+     * Disables the automatic execution of the event loop at the end of the current thread.
+     */
+    public static function disableAutoStart()
+    {
+        self::$autoStart = false;
+    }
+
+    /**
      * Runs all tasks in the global event loop.
-     *
-     * @return [type] [description]
      */
     public static function run()
     {
