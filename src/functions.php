@@ -22,10 +22,10 @@ use React\Promise\Promise;
 use React\Promise\PromiseInterface;
 
 /**
- * Creates and returns an asynchronous function from a callable.
+ * Creates and returns a promise to call a generator function asynchronously.
  *
  * @param  callable $function
- * @return \Closure
+ * @return Promise
  */
 function async(callable $function)
 {
