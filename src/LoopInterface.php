@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2014 Stephen Coakley <me@stephencoakley.com>
+ * Copyright 2015 Stephen Coakley <me@stephencoakley.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy
@@ -17,8 +17,37 @@
 
 namespace Evflow;
 
+/**
+ * A generic loop interface that supports execution control and a task double queue.
+ */
 interface LoopInterface
 {
-    public function start();
+    /**
+     * Schedules a task to be executed in the future.
+     *
+     * @param callable $task
+     */
+    public function scheduleTask(callable $task);
+
+    /**
+     * Schedules a microtask to be executed immediately in the next tick.
+     *
+     * @param callable $task
+     */
+    public function scheduleMicrotask(callable $task);
+
+    /**
+     * Executes a single iteration of the event loop.
+     */
+    public function tick();
+
+    /**
+     * Runs the event loop until there are no more events to process.
+     */
+    public function run();
+
+    /**
+     * Stops the event loop execution.
+     */
     public function stop();
 }

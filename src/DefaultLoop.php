@@ -47,7 +47,7 @@ final class DefaultLoop
      */
     public static function init(LoopInterface $loop = null)
     {
-        self::$loopInstance = !!$loop ? $loop : new PollEventLoop();
+        self::$loopInstance = !!$loop ? $loop : new EventLoop();
 
         // run the global event loop just before the program exits
         register_shutdown_function(function () {
