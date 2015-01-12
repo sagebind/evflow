@@ -23,6 +23,9 @@
     "autoload": {
         "psr-4": {
             "Evflow\\": "src/"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     }
 }
