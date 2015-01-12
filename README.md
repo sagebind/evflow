@@ -47,7 +47,7 @@ if ($socket = fsockopen('fake-response.appspot.com', 80, $errno, $errstr, 30)) {
 ```
 
 ## Tests
-When the project settles in and becomes more stable, ~100% unit test coverage will be a top priority. We're not there yet, so while you can run the test suite with `phpunit`, don't expect anything to be fully tested. :)
+When the project settles in and becomes more stable, unit test coverage will be a top priority, but 100% code coverage will likely not be possible. Asynchronous programming is non-linear and complex, and testing an event loop is not straightforward. We're not there yet, so while you can run the test suite with `phpunit`, don't expect anything to be fully tested. :)
 
 ## Uses
 Evflow's pluggable architecture opens up tons of integration possibilities. Some asynchronous libraries exist for PHP, but most of them use their own event loops and retrofitting them to use another would be difficult. To make asynchronous programming really work, tasks need to share the same event loop so that processing time is given fairly and correctly to all event callbacks.
