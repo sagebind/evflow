@@ -124,7 +124,11 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
      */
     public function attachDevice(EventDeviceInterface $device)
     {
-        $this->devices->attach($device, spl_object_hash($device));
+        // attach the device...
+        $this->devices->attach($device);
+        // ...and set the device's loop context
+        $device->setLoop($this);
+
         $this->log(LogLevel::INFO, 'New event device #' . spl_object_hash($device) . ' attached.');
     }
 
@@ -135,28 +139,45 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
      */
     public function detachDevice(EventDeviceInterface $device)
     {
+        // check if the device exists
         if ($this->devices->contains($device)) {
+            // remove loop context
+            $device->setLoop(null);
             $this->devices->detach($device);
+
             $this->log(LogLevel::INFO, 'Unloaded event device #' . spl_object_hash($device) . '\'.');
         }
     }
 
-    public function hasDeviceOfType($deviceType)
+    /**
+     * Gets an event device instance of a given type.
+     *
+     * If an instance of the given type cannot be found and the type is a class,
+     * a new instance of the class will be created. If the type is an interface,
+     * an exception will be thrown.
+     *
+     * @param  string               $typeName The type of the event device.
+     * @return EventDeviceInterface           An event device instance.
+     */
+    public function getDeviceOfType($typeName)
     {
+        // find a device of the given type
         foreach ($this->devices as $device) {
-            if ($device instanceof $deviceType) {
-                return true;
-            }
-        }
-    }
-
-    public function getDeviceOfType($waiterType)
-    {
-        foreach ($this->devices as $device) {
-            if ($device instanceof $deviceType) {
+            if ($device instanceof $typeName) {
                 return $device;
             }
         }
+
+        // create a new instance
+        $type = new \ReflectionClass($typeName);
+        if ($type->isInstantiable()) {
+            $instance = $type->newInstance();
+            $this->attachDevice($instance);
+            return $instance;
+        }
+
+        // can't instantiate the type
+        throw new \Exception("Cannot create instance of type \"$typeName\".");
     }
 
     /**

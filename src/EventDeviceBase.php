@@ -17,30 +17,30 @@
 
 namespace Evflow;
 
+/**
+ * Base class for event devices that handles loop context.
+ */
 abstract class EventDeviceBase implements EventDeviceInterface
 {
+    /**
+     * The event loop context of the device.
+     * @type LoopInterface
+     */
     private $loop;
 
-    public static function instance(LoopInterface $loop = null)
-    {
-        $loop = $loop !== null ? $loop : DefaultLoop::instance();
-
-        if ($loop->hasWaiterOfType(static::class)) {
-            return $loop->getWaiterOfType(static::class);
-        } else {
-            $instance = new static($loop);
-            $loop->loadWaiter($instance);
-            return $instance;
-        }
-    }
-
-    public function __construct(LoopInterface $loop)
-    {
-        $this->loop = $loop;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function getLoop()
     {
         return $this->loop;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setLoop(LoopInterface $loop)
+    {
+        $this->loop = $loop;
     }
 }

@@ -36,8 +36,7 @@ class EventLoopTest extends \PHPUnit_Framework_TestCase
 
     public function testStreams()
     {
-        $device = new Evflow\StreamEventDevice($this->eventLoop);
-        $this->eventLoop->attachDevice($device);
+        $device = $this->eventLoop->getDeviceOfType(Evflow\StreamEventDevice::class);
 
         $ran = false;
         // open a socket
