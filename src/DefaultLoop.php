@@ -43,7 +43,7 @@ final class DefaultLoop
      * used), then the loop will never get registered to run and won't disturb
      * normal execution flow at all.
      *
-     * @param  LoopInterface $loop The loop instance to use as the global event loop.
+     * @param LoopInterface $loop The loop instance to use as the global event loop.
      */
     public static function init(LoopInterface $loop = null)
     {
@@ -94,7 +94,7 @@ final class DefaultLoop
      */
     public static function run()
     {
-        self::instance()->start();
+        self::instance()->run();
     }
 
     // prevents instantiation
