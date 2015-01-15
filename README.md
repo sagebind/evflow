@@ -1,5 +1,6 @@
 # Evflow
 [![Latest Stable Version](http://img.shields.io/packagist/v/evflow/evflow.svg?style=flat)](https://packagist.org/packages/evflow/evflow)
+![Code Quality](https://img.shields.io/scrutinizer/g/coderstephen/evflow.svg?style=flat)
 [![License](http://img.shields.io/badge/license-Apache--2.0-b57edc.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 ![Status](http://img.shields.io/badge/status-awesome-blue.svg?style=flat)
 
