@@ -6,40 +6,32 @@
 Evflow (/ˈɛvfloʊ/) is an open and extensible event loop library for asynchronous programming in PHP. It is taken from many lessons learned from other attempts at asynchronous programming in PHP, especially from [ReactPHP](http://reactphp.org). Evflow is currently an experiment, and will be changed constantly as new ideas take form.
 
 ## Usage
-Here is how to use the current version of the code if you want to play around. The following code does an operation after 2 seconds, another after 15 seconds, gets a line of input from the console, and downloads a slow web page, all concurrently. You can type in a line of input at any point during the program and it will be successfully and immediately captured.
+Here is how to use the current version of the code if you want to play around.
 
 ```php
 <?php
-use Evflow\TimerWatcher;
-use Evflow\StreamWatcher;
+use Evflow\DefaultLoop;
+use Evflow\StreamEventDevice;
 
-function waitAsync($msec)
-{
-    return (new TimerWatcher($msec))->promise();
-}
+// get a stream event device
+$streams = DefaultLoop::instance()->getDeviceOfType(StreamEventDevice::class);
 
-waitAsync(2000)->then(function () {
-    print "Hello after 2 seconds!";
-});
-
-waitAsync(15000)->then(function () {
-    print "Hello after 15 seconds!";
-});
-
-$inputWatcher = new StreamWatcher(STDIN, StreamWatcher::READ);
-$inputWatcher->then(function () {
+// wait for input on stdin
+$streams->addStream(STDIN, StreamEventDevice::READ, function () {
     $line = fgets(STDIN);
     printf("Read async from STDIN: '%s'\r\n", $line);
+    fclose(STDIN);
 });
 
+// open a slow connection
 if ($socket = fsockopen('fake-response.appspot.com', 80, $errno, $errstr, 30)) {
     $out = "GET / HTTP/1.1\r\n";
     $out .= "Host: fake-response.appspot.com\r\n";
     $out .= "Connection: Close\r\n\r\n";
     fwrite($socket, $out);
 
-    $socketWatcher = new StreamWatcher($socket, StreamWatcher::READ);
-    $socketWatcher->then(function () use ($socket) {
+    // wait for response
+    $streams->addStream($socket, StreamEventDevice::READ, function () use ($socket) {
         echo "\r\nResponse:\r\n", fread($socket, 1024);
         fclose($socket);
     });
