@@ -150,34 +150,49 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     }
 
     /**
-     * Gets an event device instance of a given type.
+     * Gets an attached event device instance of a given type, or creates a new
+     * instance of one cannot be found.
      *
-     * If an instance of the given type cannot be found and the type is a class,
-     * a new instance of the class will be created. If the type is an interface,
-     * an exception will be thrown.
+     * This is a convenience method that allows abstraction over event device
+     * types. An interface can be given as `$type` and any device that implements
+     * the interface could be returned. A concrete type can be specified as an
+     * alternative to use.
      *
-     * @param  string               $typeName The type of the event device.
-     * @return EventDeviceInterface           An event device instance.
+     * @param  string               $type        The type of the event device.
+     * @param  string               $defaultType The type to use if an instance of the given type cannot be found.
+     * @return EventDeviceInterface              An event device instance.
      */
-    public function getDeviceOfType($typeName)
+    public function getDeviceOfType($type, $defaultType = null)
     {
         // find a device of the given type
         foreach ($this->devices as $device) {
-            if ($device instanceof $typeName) {
+            if ($device instanceof $type) {
                 return $device;
             }
         }
 
-        // create a new instance
-        $type = new \ReflectionClass($typeName);
-        if ($type->isInstantiable()) {
-            $instance = $type->newInstance();
+        // instance not found
+        // if no default type is specified, we will try to instantiate the given class
+        if ($defaultType === null) {
+            $defaultType = $type;
+        }
+
+        // check if the type exists
+        if (!class_exists($defaultType) && !interface_exists($defaultType)) {
+            throw new TypeException("Class or interface \"$defaultType\" does not exist.");
+        }
+
+        // check if the type is instantiable
+        $class = new \ReflectionClass($defaultType);
+        if ($class->isInstantiable()) {
+            // attach & return a new instance
+            $instance = $class->newInstance();
             $this->attachDevice($instance);
             return $instance;
         }
 
         // can't instantiate the type
-        throw new \Exception("Cannot create instance of type \"$typeName\".");
+        throw new TypeException("Cannot create instance of type \"$defaultType\".");
     }
 
     /**
