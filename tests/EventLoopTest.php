@@ -17,7 +17,8 @@
 
 namespace Evflow\Tests;
 
-use Evflow;
+use Evflow\EventLoop;
+use Evflow\StreamEventDevice;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -30,13 +31,13 @@ class EventLoopTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('EventLoop');
         $log->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
 
-        $this->eventLoop = new Evflow\EventLoop();
+        $this->eventLoop = new EventLoop();
         $this->eventLoop->setLogger($log);
     }
 
     public function testStreams()
     {
-        $device = $this->eventLoop->getDeviceOfType(Evflow\StreamEventDevice::class);
+        $device = $this->eventLoop->getDeviceOfType(StreamEventDevice::class);
 
         $ran = false;
         // open a socket
@@ -48,7 +49,7 @@ class EventLoopTest extends \PHPUnit_Framework_TestCase
         $out .= "Connection: Close\r\n\r\n";
         fwrite($socket, $out);
 
-        $device->addStream($socket, Evflow\StreamEventDevice::READ, function ($stream) use (&$ran) {
+        $device->addStream($socket, StreamEventDevice::READ, function ($stream) use (&$ran) {
             fread($stream, 1024);
             fclose($stream);
             $ran = true;
