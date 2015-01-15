@@ -17,8 +17,7 @@
 
 namespace Evflow\Tests;
 
-use Evflow\EventLoop;
-use Evflow\TimerWatcher;
+use Evflow;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -31,16 +30,28 @@ class EventLoopTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('EventLoop');
         $log->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
 
-        $this->eventLoop = new EventLoop();
+        $this->eventLoop = new Evflow\EventLoop();
         $this->eventLoop->setLogger($log);
     }
 
-    public function testTimer()
+    public function testStreams()
     {
-        $ran = false;
+        $device = new Evflow\StreamEventDevice($this->eventLoop);
+        $this->eventLoop->attachDevice($device);
 
-        $watcher = new TimerWatcher(3, $this->eventLoop);
-        $watcher->promise()->then(function ($watcher) use (&$ran) {
+        $ran = false;
+        // open a socket
+        $socket = fsockopen('fake-response.appspot.com', 80, $errno, $errstr, 30);
+
+        // send an HTTP request
+        $out = "GET / HTTP/1.1\r\n";
+        $out .= "Host: fake-response.appspot.com\r\n";
+        $out .= "Connection: Close\r\n\r\n";
+        fwrite($socket, $out);
+
+        $device->addStream($socket, Evflow\StreamEventDevice::READ, function ($stream) use (&$ran) {
+            fread($stream, 1024);
+            fclose($stream);
             $ran = true;
         });
 

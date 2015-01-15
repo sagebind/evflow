@@ -17,7 +17,6 @@
 
 namespace Evflow;
 
-use Evenement\EventEmitterTrait;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -27,13 +26,11 @@ use Psr\Log\LogLevel;
  */
 class EventLoop implements LoopInterface, LoggerAwareInterface
 {
-    use EventEmitterTrait;
-
     /**
-     * A list of watchers.
-     * @type array
+     * A collection of event devices attached to this event loop.
+     * @type \SplObjectStorage
      */
-    protected $watchers;
+    protected $devices;
 
     /**
      * A queue of received event handlers to execute.
@@ -79,7 +76,8 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
      */
     public function __construct()
     {
-        $this->watchers = [];
+        // initialize all the collections
+        $this->devices = new \SplObjectStorage();
         $this->eventQueue = new \SplQueue();
         $this->microtaskQueue = new \SplQueue();
     }
@@ -120,14 +118,45 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     }
 
     /**
-     * Adds an event watcher to the event loop.
+     * Attaches an event device instance to the event loop.
      *
-     * @param WatcherInterface $watcher
+     * @param EventDeviceInterface $device
      */
-    public function addWatcher(WatcherInterface $watcher)
+    public function attachDevice(EventDeviceInterface $device)
     {
-        $this->watchers[spl_object_hash($watcher)] = $watcher;
-        $this->log(LogLevel::INFO, 'New watcher of type \'' . get_class($watcher) . '\' added to queue.');
+        $this->devices->attach($device, spl_object_hash($device));
+        $this->log(LogLevel::INFO, 'New event device #' . spl_object_hash($device) . ' attached.');
+    }
+
+    /**
+     * Detaches an event device from the event loop.
+     *
+     * @param EventDeviceInterface $device
+     */
+    public function detachDevice(EventDeviceInterface $device)
+    {
+        if ($this->devices->contains($device)) {
+            $this->devices->detach($device);
+            $this->log(LogLevel::INFO, 'Unloaded event device #' . spl_object_hash($device) . '\'.');
+        }
+    }
+
+    public function hasDeviceOfType($deviceType)
+    {
+        foreach ($this->devices as $device) {
+            if ($device instanceof $deviceType) {
+                return true;
+            }
+        }
+    }
+
+    public function getDeviceOfType($waiterType)
+    {
+        foreach ($this->devices as $device) {
+            if ($device instanceof $deviceType) {
+                return $device;
+            }
+        }
     }
 
     /**
@@ -153,6 +182,36 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     public function getTickCount()
     {
         return $this->tickCount;
+    }
+
+    /**
+     * Checks if the event loop or any event devices will have any more work to
+     * do in the future.
+     *
+     * Helps you find those lazy peons.
+     *
+     * @return boolean
+     */
+    public function isActive()
+    {
+        // check the microtask queue first
+        if (!$this->microtaskQueue->isEmpty()) {
+            return true;
+        }
+
+        // any event callbacks?
+        if (!$this->eventQueue->isEmpty()) {
+            return true;
+        }
+
+        // check each event device
+        foreach ($this->devices as $device) {
+            if ($device->isActive()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -182,14 +241,15 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
             $task();
         }
 
-        foreach ($this->watchers as $key => $watcher) {
-            if ($watcher->poll()) {
-                $this->log(LogLevel::INFO, 'Event detected from watcher #' . $key . '.');
-                $this->scheduleTask(function () use ($watcher) {
-                    $watcher->resolve();
-                });
+        // poll all event devices for new events
+        foreach ($this->devices as $device) {
+            // only poll the device if it is active
+            if ($device->isActive()) {
+                $readyCount = $device->poll(0);
 
-                unset($this->watchers[$key]);
+                if ($readyCount > 0) {
+                    $this->log(LogLevel::INFO, $readyCount . ' event(s) detected from device #' . spl_object_hash($device) . '.');
+                }
             }
         }
 
@@ -202,9 +262,7 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     public function run()
     {
         $this->running = true;
-        $this->log(LogLevel::DEBUG, 'Event loop started.');
-        $this->emit('startup');
-        $this->log(LogLevel::INFO, 'Waiting for events.');
+        $this->log(LogLevel::INFO, 'Event loop started.');
 
         // run the event loop until instructed otherwise
         while ($this->running) {
@@ -214,18 +272,16 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
             // update idle state
             $this->updateIdleState();
 
-            // if we have no pending watchers, stop
-            if (count($this->watchers) === 0 && $this->eventQueue->isEmpty()) {
-                $this->log(LogLevel::DEBUG, 'Watcher queue is empty.');
+            // if we have no more work to do, stop wasting time
+            if (!$this->isActive()) {
+                $this->log(LogLevel::DEBUG, 'Nothing left to do.');
                 $this->stop();
             }
 
             usleep(1);
         }
 
-        $this->log(LogLevel::DEBUG, 'Event loop shutting down.');
-        $this->emit('shutdown');
-        $this->log(LogLevel::INFO, 'Event loop has shut down.');
+        $this->log(LogLevel::INFO, 'Event loop stopped.');
     }
 
     /**
@@ -238,7 +294,6 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
             if (!$this->idle) {
                 $this->idle = true;
                 $this->log(LogLevel::INFO, 'Entered idle state.');
-                $this->emit('idle');
             }
         } elseif ($this->idle) {
             $this->idle = false;
