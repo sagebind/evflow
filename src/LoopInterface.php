@@ -22,19 +22,27 @@ namespace Evflow;
  */
 interface LoopInterface
 {
-    /**
-     * Schedules a task to be executed in the future.
-     *
-     * @param callable $task
-     */
-    public function scheduleTask(callable $task);
+    public function getDevices();
 
     /**
-     * Schedules a microtask to be executed immediately in the next tick.
+     * Schedules a callback to be executed in the future.
      *
-     * @param callable $task
+     * This function is typically used to queue up callbacks for asynchronous
+     * events, usually from an event device.
+     *
+     * @param callable $callback
      */
-    public function scheduleMicrotask(callable $task);
+    public function futureTick(callable $callback);
+
+    /**
+     * Schedules a callback to be executed immediately in the next tick.
+     *
+     * This function should be used when a callback needs to be executed later,
+     * but needs to do so before any more event callbacks are invoked.
+     *
+     * @param callable $callback
+     */
+    public function nextTick(callable $callback);
 
     /**
      * Executes a single iteration of the event loop.

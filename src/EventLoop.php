@@ -33,28 +33,14 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     protected $devices;
 
     /**
-     * A queue of received event handlers to execute.
-     * @type \SplQueue
+     * @var \SplQueue A queue of callbacks to be invoked in the next tick.
      */
-    protected $eventQueue;
+    protected $nextTickQueue;
 
     /**
-     * A queue of microtask handlers to execute.
-     * @type \SplQueue
+     * @var \SplQueue A queue of callbacks to be invoked in a future tick.
      */
-    protected $microtaskQueue;
-
-    /**
-     * Flag that indicates if the event loop is currently running.
-     * @type boolean
-     */
-    protected $running = false;
-
-    /**
-     * A flag indicating if the event loop is in the idle state.
-     * @type boolean
-     */
-    protected $idle = false;
+    protected $futureTickQueue;
 
     /**
      * The current running tick count.
@@ -63,10 +49,30 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     protected $tickCount = 0;
 
     /**
+     * The minimum allowed time between ticks in microseconds.
+     * @type integer
+     */
+    protected $minPollInterval = 1;
+
+    /**
      * A logger for sending log information to.
      * @type LoggerInterface
      */
-    protected $logger;
+    private $logger;
+
+    /**
+     * Flag that indicates if the event loop is currently running.
+     * @type boolean
+     */
+    private $running = false;
+
+    /**
+     * A flag indicating if the event loop is in the idle state.
+     * @type boolean
+     */
+    private $idle = false;
+
+    private $currentTime;
 
     /**
      * Creates a new event loop instance.
@@ -76,123 +82,14 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
      */
     public function __construct()
     {
-        // initialize all the collections
-        $this->devices = new \SplObjectStorage();
-        $this->eventQueue = new \SplQueue();
-        $this->microtaskQueue = new \SplQueue();
+        $this->nextTickQueue = new \SplQueue();
+        $this->futureTickQueue = new \SplQueue();
+        $this->devices = new EventDeviceManager($this);
     }
 
-    /**
-     * Sets a logger instance to send event log info to.
-     *
-     * @param LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
+    public function getDevices()
     {
-        $this->logger = $logger;
-        $this->log(LogLevel::DEBUG, 'New logger registered. Hello logger!');
-    }
-
-    /**
-     * Schedules a task to be executed in the future.
-     *
-     * @param callable $task
-     */
-    public function scheduleTask(callable $task)
-    {
-        $this->log(LogLevel::DEBUG, 'Adding new callback to event queue.');
-        $this->eventQueue->enqueue($task);
-        $this->log(LogLevel::INFO, 'Enqueued new event callback.');
-    }
-
-    /**
-     * Schedules a microtask to be executed immediately in the next tick.
-     *
-     * @param callable $task
-     */
-    public function scheduleMicrotask(callable $task)
-    {
-        $this->log(LogLevel::DEBUG, 'Adding new callback to microtask queue.');
-        $this->microtaskQueue->enqueue($task);
-        $this->log(LogLevel::INFO, 'Enqueued new microtask callback.');
-    }
-
-    /**
-     * Attaches an event device instance to the event loop.
-     *
-     * @param EventDeviceInterface $device
-     */
-    public function attachDevice(EventDeviceInterface $device)
-    {
-        // attach the device...
-        $this->devices->attach($device);
-        // ...and set the device's loop context
-        $device->setLoop($this);
-
-        $this->log(LogLevel::INFO, 'New event device #' . spl_object_hash($device) . ' attached.');
-    }
-
-    /**
-     * Detaches an event device from the event loop.
-     *
-     * @param EventDeviceInterface $device
-     */
-    public function detachDevice(EventDeviceInterface $device)
-    {
-        // check if the device exists
-        if ($this->devices->contains($device)) {
-            // remove loop context
-            $device->setLoop(null);
-            $this->devices->detach($device);
-
-            $this->log(LogLevel::INFO, 'Unloaded event device #' . spl_object_hash($device) . '\'.');
-        }
-    }
-
-    /**
-     * Gets an attached event device instance of a given type, or creates a new
-     * instance of one cannot be found.
-     *
-     * This is a convenience method that allows abstraction over event device
-     * types. An interface can be given as `$type` and any device that implements
-     * the interface could be returned. A concrete type can be specified as an
-     * alternative to use.
-     *
-     * @param  string               $type        The type of the event device.
-     * @param  string               $defaultType The type to use if an instance of the given type cannot be found.
-     * @return EventDeviceInterface              An event device instance.
-     */
-    public function getDeviceOfType($type, $defaultType = null)
-    {
-        // find a device of the given type
-        foreach ($this->devices as $device) {
-            if ($device instanceof $type) {
-                return $device;
-            }
-        }
-
-        // instance not found
-        // if no default type is specified, we will try to instantiate the given class
-        if ($defaultType === null) {
-            $defaultType = $type;
-        }
-
-        // check if the type exists
-        if (!class_exists($defaultType) && !interface_exists($defaultType)) {
-            throw new TypeException("Class or interface \"$defaultType\" does not exist.");
-        }
-
-        // check if the type is instantiable
-        $class = new \ReflectionClass($defaultType);
-        if ($class->isInstantiable()) {
-            // attach & return a new instance
-            $instance = $class->newInstance();
-            $this->attachDevice($instance);
-            return $instance;
-        }
-
-        // can't instantiate the type
-        throw new TypeException("Cannot create instance of type \"$defaultType\".");
+        return $this->devices;
     }
 
     /**
@@ -221,33 +118,37 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     }
 
     /**
-     * Checks if the event loop or any event devices will have any more work to
-     * do in the future.
+     * Sets a logger instance to send event log info to.
      *
-     * Helps you find those lazy peons.
-     *
-     * @return boolean
+     * @param LoggerInterface $logger
      */
-    public function isActive()
+    public function setLogger(LoggerInterface $logger)
     {
-        // check the microtask queue first
-        if (!$this->microtaskQueue->isEmpty()) {
-            return true;
-        }
+        $this->logger = $logger;
+        $this->log(LogLevel::DEBUG, 'New logger registered. Hello logger!');
+    }
 
-        // any event callbacks?
-        if (!$this->eventQueue->isEmpty()) {
-            return true;
-        }
+    /**
+     * @inheritDoc
+     */
+    public function nextTick(callable $callback)
+    {
+        $this->nextTickQueue->enqueue($callback);
+        $this->log(LogLevel::INFO, 'Enqueued new next tick callback.');
+    }
 
-        // check each event device
-        foreach ($this->devices as $device) {
-            if ($device->isActive()) {
-                return true;
-            }
-        }
+    /**
+     * @inheritDoc
+     */
+    public function futureTick(callable $callback)
+    {
+        $this->futureTickQueue->enqueue($callback);
+        $this->log(LogLevel::INFO, 'Enqueued new future tick callback.');
+    }
 
-        return false;
+    public function updateTime()
+    {
+        $this->currentTime = microtime(true) * self::MICROSECONDS_PER_SECOND;
     }
 
     /**
@@ -264,9 +165,18 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
      */
     public function tick()
     {
-        // execute all microtasks
-        while (!$this->microtaskQueue->isEmpty()) {
-            $this->microtaskQueue->dequeue();
+        // invoke all callbacks scheduled for this tick
+        while (!$this->nextTickQueue->isEmpty()) {
+            $callback = $this->nextTickQueue->dequeue();
+            $this->log(LogLevel::INFO, 'Invoking next scheduled tick callback.');
+            $callback();
+        }
+
+        // invoke the next future tick callback
+        if (!$this->futureTickQueue->isEmpty()) {
+            $callback = $this->futureTickQueue->dequeue();
+            $this->log(LogLevel::INFO, 'Invoking next future tick callback.');
+            $callback();
         }
 
         // execute the next event task
@@ -306,10 +216,18 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
             $this->tick();
 
             // update idle state
-            $this->updateIdleState();
+            if ($this->nextTickQueue->isEmpty() && $this->futureTickQueue->isEmpty()) {
+                if (!$this->idle) {
+                    $this->idle = true;
+                    $this->log(LogLevel::INFO, 'Entered idle state.');
+                }
+            } elseif ($this->idle) {
+                $this->idle = false;
+                $this->log(LogLevel::INFO, 'Leaving idle state.');
+            }
 
             // if we have no more work to do, stop wasting time
-            if (!$this->isActive()) {
+            if ($this->idle && $this->devices->activeDeviceCount() === 0) {
                 $this->log(LogLevel::DEBUG, 'Nothing left to do.');
                 $this->stop();
             }
@@ -318,23 +236,6 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
         }
 
         $this->log(LogLevel::INFO, 'Event loop stopped.');
-    }
-
-    /**
-     * Updates the idle state information by checking if there are any pending
-     * tasks.
-     */
-    protected function updateIdleState()
-    {
-        if ($this->eventQueue->isEmpty() && $this->microtaskQueue->isEmpty()) {
-            if (!$this->idle) {
-                $this->idle = true;
-                $this->log(LogLevel::INFO, 'Entered idle state.');
-            }
-        } elseif ($this->idle) {
-            $this->idle = false;
-            $this->log(LogLevel::INFO, 'Leaving idle state.');
-        }
     }
 
     /**
