@@ -44,8 +44,7 @@ interface EventDeviceInterface
      * once and return immediately. If a timeout of -1 is given, the event device
      * should wait indefinitely for new events until at least one occurs.
      *
-     * @param  int $timeout The poll timeout in microseconds.
-     * @return int          The number of events detected.
+     * @param int $timeout The poll timeout in microseconds.
      */
     public function poll($timeout);
 
@@ -57,7 +56,7 @@ interface EventDeviceInterface
      * if it is no longer possible for the event device to generate new tasks
      * to be scheduled.
      *
-     * @return boolean True if the event device is idle, otherwise false.
+     * @return bool True if the event device is idle, otherwise false.
      */
     public function isActive();
 }

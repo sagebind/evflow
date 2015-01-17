@@ -25,15 +25,27 @@ class StreamEventDevice extends EventDeviceBase
     const READ = 1;
     const WRITE = 2;
 
+    /**
+     * @var array An array of streams to poll for reading.
+     */
     protected $readStreams = [];
+
+    /**
+     * @var array An array of streams to poll for writing.
+     */
     protected $writeStreams = [];
+
+    /**
+     * @var array A map of streams to callbacks to invoke when an event occurs.
+     */
     protected $callbacks = [];
 
     /**
      * Registers interest in status changes on a stream.
      *
-     * @param [type] $stream [description]
-     * @param [type] $mode   [description]
+     * @param resource $stream   A stream resource to watch for status changes.
+     * @param int      $mode     The stream modes to watch for.
+     * @param callable $callback A callback to invoke when an event on the stream occurs.
      */
     public function addStream($stream, $mode, $callback)
     {
@@ -48,6 +60,12 @@ class StreamEventDevice extends EventDeviceBase
         $this->callbacks[(int)$stream] = $callback;
     }
 
+    /**
+     * Removes a stream from the device, stopping any listening.
+     *
+     * @param resource $stream The stream to remove.
+     * @param int      $mode   The modes to stop watching for.
+     */
     public function removeStream($stream, $mode = 3)
     {
         if (($mode & self::READ) === self::READ && isset($this->readStreams[(int)$stream])) {
@@ -64,7 +82,7 @@ class StreamEventDevice extends EventDeviceBase
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function poll($timeout)
     {
@@ -72,17 +90,12 @@ class StreamEventDevice extends EventDeviceBase
         $write = array_values($this->writeStreams);
         $except = [];
 
-        if (stream_select($read, $write, $except, 0) !== false) {
-            foreach ($read as $stream) {
-                $this->getLoop()->scheduleTask(function () use ($stream) {
-                    $this->callbacks[(int)$stream]($stream);
-                    if (!is_resource($stream)) {
-                        $this->removeStream($stream);
-                    }
-                });
-            }
+        // calculate timeout values
+        $tv_sec = $timeout === -1 ? null : 0;
+        $tv_usec = $timeout === -1 ? null : $timeout;
 
-            foreach ($write as $stream) {
+        if (stream_select($read, $write, $except, $tv_sec, $tv_usec) !== false) {
+            foreach (array_merge($read, $write) as $stream) {
                 $this->getLoop()->scheduleTask(function () use ($stream) {
                     $this->callbacks[(int)$stream]($stream);
                     if (!is_resource($stream)) {
@@ -91,12 +104,10 @@ class StreamEventDevice extends EventDeviceBase
                 });
             }
         }
-
-        return count($read) + count($write);
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isActive()
     {

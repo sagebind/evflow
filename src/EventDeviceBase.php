@@ -23,13 +23,12 @@ namespace Evflow;
 abstract class EventDeviceBase implements EventDeviceInterface
 {
     /**
-     * The event loop context of the device.
-     * @type LoopInterface
+     * @var LoopInterface The event loop context of the device.
      */
     private $loop;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLoop()
     {
@@ -37,7 +36,7 @@ abstract class EventDeviceBase implements EventDeviceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setLoop(LoopInterface $loop)
     {
