@@ -32,7 +32,7 @@ function async(callable $function)
     // return a new promise
     return new Promise(function (callable $resolve, callable $reject, callable $progress) use ($function) {
         // get the generator
-        $generator = $function($this);
+        $generator = $function();
 
         // function to step the generator to the next yield statement
         $step = function () use (&$step, $generator, $resolve, $reject, $progress) {
@@ -59,7 +59,7 @@ function async(callable $function)
             }
 
             // run the next step when the current one resolves
-            $value->then(function ($value) {
+            $value->then(function ($value) use (&$step, $generator) {
                 $generator->send($value);
                 $step();
             }, function (\Exception $reason) {
@@ -67,7 +67,7 @@ function async(callable $function)
             });
         };
 
-        // run the first step in the event loop
-        DefaultLoop::instance()->scheduleTask($step);
+        // run the first step in the next tick
+        DefaultLoop::instance()->nextTick($step);
     });
 }
