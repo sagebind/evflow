@@ -27,52 +27,44 @@ use Psr\Log\LogLevel;
 class EventLoop implements LoopInterface, LoggerAwareInterface
 {
     /**
-     * A collection of event devices attached to this event loop.
-     * @type \SplObjectStorage
+     * @var EventDeviceManager A collection of event devices attached to this event loop.
      */
     protected $devices;
 
     /**
      * @var \SplQueue A queue of callbacks to be invoked in the next tick.
      */
-    protected $nextTickQueue;
+    private $nextTickQueue;
 
     /**
      * @var \SplQueue A queue of callbacks to be invoked in a future tick.
      */
-    protected $futureTickQueue;
+    private $futureTickQueue;
 
     /**
-     * The current running tick count.
-     * @type integer
+     * @var int The current running tick count.
      */
-    protected $tickCount = 0;
+    private $tickCount = 0;
 
     /**
-     * The minimum allowed time between ticks in microseconds.
-     * @type integer
+     * @var int The minimum allowed time between ticks in microseconds.
      */
-    protected $minPollInterval = 1;
+    private $minPollInterval = 1000;
 
     /**
-     * A logger for sending log information to.
-     * @type LoggerInterface
+     * @var LoggerInterface A logger for sending log information to.
      */
     private $logger;
 
     /**
-     * Flag that indicates if the event loop is currently running.
-     * @type boolean
+     * @var bool Flag that indicates if the event loop is currently running.
      */
     private $running = false;
 
     /**
-     * A flag indicating if the event loop is in the idle state.
-     * @type boolean
+     * @var bool A flag indicating if the event loop is in the idle state.
      */
     private $idle = false;
-
-    private $currentTime;
 
     /**
      * Creates a new event loop instance.
@@ -87,6 +79,11 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
         $this->devices = new EventDeviceManager($this);
     }
 
+    /**
+     * Gets the event device manager for the event loop.
+     *
+     * @return EventDeviceManager
+     */
     public function getDevices()
     {
         return $this->devices;
@@ -95,7 +92,12 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     /**
      * Checks if the event loop is in the idle state.
      *
-     * @return boolean
+     * The event loop enters the idle state when there are no pending or future
+     * callback functions to invoke. There may still be active event devices
+     * attached to the loop while it is idle, and will not exit until all event
+     * devices are inactive.
+     *
+     * @return bool
      */
     public function isIdle()
     {
@@ -146,22 +148,8 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
         $this->log(LogLevel::INFO, 'Enqueued new future tick callback.');
     }
 
-    public function updateTime()
-    {
-        $this->currentTime = microtime(true) * self::MICROSECONDS_PER_SECOND;
-    }
-
     /**
-     * {@inheritDoc}
-     */
-    public function stop()
-    {
-        $this->log(LogLevel::DEBUG, 'Stopping event loop.');
-        $this->running = false;
-    }
-
-    /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function tick()
     {
@@ -179,23 +167,20 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
             $callback();
         }
 
-        // execute the next event task
-        if (!$this->eventQueue->isEmpty()) {
-            $this->log(LogLevel::INFO, 'Dequeued event callback from event queue.');
-            $task = $this->eventQueue->dequeue();
-            $this->log(LogLevel::INFO, 'Invoking event callback.');
-            $task();
+        // poll each device & return immediately
+        $timeout = 0;
+
+        // if the loop is idle and only one device is active we can poll it forever
+        if ($this->devices->activeDeviceCount() === 1 && $this->idle) {
+            $timeout = -1;
+            $this->log(LogLevel::DEBUG, 'Only one active event device. Polling indefinitely.');
         }
 
         // poll all event devices for new events
         foreach ($this->devices as $device) {
             // only poll the device if it is active
             if ($device->isActive()) {
-                $readyCount = $device->poll(0);
-
-                if ($readyCount > 0) {
-                    $this->log(LogLevel::INFO, $readyCount . ' event(s) detected from device #' . spl_object_hash($device) . '.');
-                }
+                $device->poll($timeout);
             }
         }
 
@@ -203,7 +188,7 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function run()
     {
@@ -232,10 +217,19 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
                 $this->stop();
             }
 
-            usleep(1);
+            usleep($this->minPollInterval);
         }
 
         $this->log(LogLevel::INFO, 'Event loop stopped.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function stop()
+    {
+        $this->log(LogLevel::DEBUG, 'Stopping event loop.');
+        $this->running = false;
     }
 
     /**
