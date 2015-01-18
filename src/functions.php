@@ -62,7 +62,7 @@ function async(callable $function)
             $value->then(function ($value) use (&$step, $generator) {
                 $generator->send($value);
                 $step();
-            }, function (\Exception $reason) {
+            }, function (\Exception $reason) use ($generator) {
                 $generator->throw($reason);
             });
         };
