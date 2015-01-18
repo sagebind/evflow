@@ -1,6 +1,6 @@
 # Evflow
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/coderstephen/evflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/evflow/evflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Latest Stable Version](http://img.shields.io/packagist/v/evflow/evflow.svg?style=flat)](https://packagist.org/packages/evflow/evflow)
 ![Code Quality](https://img.shields.io/scrutinizer/g/coderstephen/evflow.svg?style=flat)
 [![License](http://img.shields.io/badge/license-Apache--2.0-b57edc.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
