@@ -1,0 +1,75 @@
+build:
+    tests:
+        override:
+            -
+                command: phpunit --coverage-clover=coverage.clover
+                coverage:
+                    file: coverage.clover
+                    format: php-clover
+
+filter:
+    excluded_paths:
+        - tests/*
+
+checks:
+    php:
+        code_rating: true
+        duplication: true
+        variable_existence: true
+        uppercase_constants: true
+        unused_variables: true
+        unreachable_code: true
+        unused_methods: true
+        unused_parameters: true
+        unused_properties: true
+        return_doc_comments: true
+        require_scope_for_properties: true
+        require_scope_for_methods: true
+        require_php_tag_first: true
+        precedence_in_conditions: true
+        precedence_mistakes: true
+        phpunit_assertions: true
+        php5_style_constructor: true
+        parameter_non_unique: true
+        parameter_doc_comments: true
+        no_non_implemented_abstract_methods: true
+        no_debug_code: true
+        useless_calls: true
+        use_statement_alias_conflict: true
+        sql_injection_vulnerabilities: true
+        security_vulnerabilities: true
+        no_property_on_interface: true
+        deprecated_code_usage: true
+        closure_use_not_conflicting: true
+        closure_use_modifiable: true
+        avoid_useless_overridden_methods: true
+        avoid_conflicting_incrementers: true
+        assignment_of_null_return: true
+        argument_type_checks: true
+        avoid_tab_indentation: true
+        avoid_usage_of_logical_operators: true
+        blank_line_after_namespace_declaration: true
+        classes_in_camel_caps: true
+        encourage_single_quotes: true
+        foreach_traversable: true
+        lowercase_basic_constants: true
+        lowercase_php_keywords: true
+        instanceof_class_exists: true
+        function_in_camel_caps: true
+        newline_at_end_of_file: true
+        no_else_if_statements: true
+        no_trailing_whitespace: true
+        no_unnecessary_function_call_in_for_loop: true
+        properties_in_camelcaps: true
+
+tools:
+    php_changetracking:
+        enabled: true
+        bug_patterns:
+            - '\bfix(?:es|ed)?\b'
+        feature_patterns:
+            - '\badd(?:s|ed)?\b'
+            - '\bimplement(?:s|ed)?\b'
+        filter:
+            paths: {  }
+            excluded_paths: {  }
