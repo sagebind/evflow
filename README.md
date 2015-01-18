@@ -2,7 +2,8 @@
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/evflow/evflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Latest Stable Version](http://img.shields.io/packagist/v/evflow/evflow.svg?style=flat)](https://packagist.org/packages/evflow/evflow)
-![Code Quality](https://img.shields.io/scrutinizer/g/coderstephen/evflow.svg?style=flat)
+[![Code Quality](https://img.shields.io/scrutinizer/g/evflow/evflow.svg?style=flat)](https://scrutinizer-ci.com/g/evflow/evflow/?branch=master)
+[![Test Coverage](https://img.shields.io/scrutinizer/coverage/g/evflow/evflow.svg?style=flat)](https://scrutinizer-ci.com/g/evflow/evflow/?branch=master)
 [![License](http://img.shields.io/badge/license-Apache--2.0-b57edc.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 ![Status](http://img.shields.io/badge/status-awesome-blue.svg?style=flat)
 
