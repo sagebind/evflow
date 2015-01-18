@@ -96,7 +96,7 @@ class StreamEventDevice extends EventDeviceBase
 
         if (stream_select($read, $write, $except, $tv_sec, $tv_usec) !== false) {
             foreach (array_merge($read, $write) as $stream) {
-                $this->getLoop()->scheduleTask(function () use ($stream) {
+                $this->getLoop()->futureTick(function () use ($stream) {
                     $this->callbacks[(int)$stream]($stream);
                     if (!is_resource($stream)) {
                         $this->removeStream($stream);
