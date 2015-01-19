@@ -19,6 +19,7 @@ namespace Evflow\Tests;
 
 use Evflow\EventLoop;
 use Evflow\StreamEventDevice;
+use Evflow\Timers\Timer;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -33,6 +34,18 @@ class EventLoopTest extends \PHPUnit_Framework_TestCase
 
         $this->eventLoop = new EventLoop();
         $this->eventLoop->setLogger($log);
+    }
+
+    public function testTimer()
+    {
+        $ran = false;
+
+        $timer = new Timer(3000000, function () use (&$ran) {
+            $ran = !$ran;
+        }, false, $this->eventLoop);
+
+        $this->eventLoop->run();
+        $this->assertTrue($ran);
     }
 
     public function testStreams()
