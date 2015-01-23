@@ -1,4 +1,4 @@
-# Evflow
+# ![Evflow](logo.png)
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/evflow/evflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Latest Stable Version](http://img.shields.io/packagist/v/evflow/evflow.svg?style=flat)](https://packagist.org/packages/evflow/evflow)
