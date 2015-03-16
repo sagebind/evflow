@@ -22,10 +22,15 @@
     },
     "autoload": {
         "psr-4": {
-            "Evflow\\": "src/"
+            "Evflow\\": "src"
         },
         "files": [
             "src/functions.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evflow\\Tests\\": "tests"
+        }
     }
 }
