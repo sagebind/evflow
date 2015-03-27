@@ -34,8 +34,9 @@ interface LoopInterface
     /**
      * Fetches an event device bound to a given type.
      *
-     * @param  string               $type The type name to fetch.
-     * @return EventDeviceInterface       The device instance bound to the given type.
+     * @param string $type The type name to fetch.
+     *
+     * @return EventDeviceInterface The device instance bound to the given type.
      */
     public function fetchDevice($type);
 

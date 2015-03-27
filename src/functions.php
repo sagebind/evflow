@@ -24,7 +24,8 @@ use React\Promise\PromiseInterface;
 /**
  * Creates and returns a promise to call a generator function asynchronously.
  *
- * @param  callable $function
+ * @param callable $function
+ *
  * @return Promise
  */
 function async(callable $function)
@@ -44,12 +45,14 @@ function async(callable $function)
             } catch (\Exception $exception) {
                 // exception rejects the promise
                 $reject($exception);
+
                 return;
             }
 
             // if the generator is complete, resolve the promise
             if (!$generator->valid()) {
                 $resolve($value);
+
                 return;
             }
 
