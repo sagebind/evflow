@@ -23,20 +23,6 @@ namespace Evflow;
 interface EventDeviceInterface
 {
     /**
-     * Gets the event loop context of the device.
-     *
-     * @return LoopInterface The event loop context.
-     */
-    public function getLoop();
-
-    /**
-     * Sets the event loop context of the device.
-     *
-     * @param LoopInterface $loop An event loop.
-     */
-    public function setLoop(LoopInterface $loop);
-
-    /**
      * Polls the event device to process new incoming events.
      *
      * The event device should wait for new events until `$timeout` is reached.
@@ -44,9 +30,10 @@ interface EventDeviceInterface
      * once and return immediately. If a timeout of -1 is given, the event device
      * should wait indefinitely for new events until at least one occurs.
      *
-     * @param int $timeout The poll timeout in microseconds.
+     * @param LoopInterface $loop    The event loop context of the poll.
+     * @param int           $timeout The poll timeout in microseconds.
      */
-    public function poll($timeout);
+    public function poll(LoopInterface $loop, $timeout);
 
     /**
      * Checks if the event device is actively listening for events.

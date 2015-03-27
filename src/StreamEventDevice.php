@@ -20,7 +20,7 @@ namespace Evflow;
 /**
  * An event device that watches streams for read and write activity.
  */
-class StreamEventDevice extends EventDeviceBase
+class StreamEventDevice implements EventDeviceInterface
 {
     const READ = 1;
     const WRITE = 2;
@@ -84,7 +84,7 @@ class StreamEventDevice extends EventDeviceBase
     /**
      * @inheritDoc
      */
-    public function poll($timeout)
+    public function poll(LoopInterface $loop, $timeout)
     {
         $read = array_values($this->readStreams);
         $write = array_values($this->writeStreams);
@@ -96,7 +96,7 @@ class StreamEventDevice extends EventDeviceBase
 
         if (stream_select($read, $write, $except, $tv_sec, $tv_usec) !== false) {
             foreach (array_merge($read, $write) as $stream) {
-                $this->getLoop()->futureTick(function () use ($stream) {
+                $loop->futureTick(function () use ($stream) {
                     $this->callbacks[(int)$stream]($stream);
                     if (!is_resource($stream)) {
                         $this->removeStream($stream);

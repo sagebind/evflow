@@ -22,12 +22,12 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 /**
- * A built-in event loop implementation that abstracts polling types to watchers.
+ * The default event loop implementation that has no external dependencies.
  */
-class EventLoop implements LoopInterface, LoggerAwareInterface
+class NativeLoop implements LoopInterface, LoggerAwareInterface
 {
     /**
-     * @var EventDeviceManager A collection of event devices attached to this event loop.
+     * @var EventDeviceBinder A collection of event devices attached to this event loop.
      */
     protected $devices;
 
@@ -76,17 +76,21 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     {
         $this->nextTickQueue = new \SplQueue();
         $this->futureTickQueue = new \SplQueue();
-        $this->devices = new EventDeviceManager($this);
+        $this->devices = new EventDeviceBinder();
     }
 
     /**
-     * Gets the event device manager for the event loop.
-     *
-     * @return EventDeviceManager
+     * {@inheritDoc}
      */
-    public function getDevices()
+    public function bindDevice(EventDeviceInterface $instance, $type = null)
     {
-        return $this->devices;
+        $this->devices->bindDevice($instance, $type);
+        $this->log(LogLevel::DEBUG, 'New event device of type '.get_class($instance).' bound.');
+    }
+
+    public function fetchDevice($type)
+    {
+        return $this->devices->fetchDevice($type);
     }
 
     /**
@@ -102,6 +106,14 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
     public function isIdle()
     {
         return $this->idle;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isRunning()
+    {
+        return $this->running;
     }
 
     /**
@@ -180,7 +192,7 @@ class EventLoop implements LoopInterface, LoggerAwareInterface
         foreach ($this->devices as $device) {
             // only poll the device if it is active
             if ($device->isActive()) {
-                $device->poll($timeout);
+                $device->poll($this, $timeout);
             }
         }
 

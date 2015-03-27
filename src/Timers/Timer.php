@@ -32,7 +32,7 @@ class Timer
         $this->periodic = !!$periodic;
         $this->callback = $callback;
         $loop = $loop !== null ? $loop : DefaultLoop::instance();
-        $loop->getDevices()->getDeviceOfType(TimerDevice::class)->addTimer($this);
+        $loop->fetchDevice(TimerDevice::class)->addTimer($this);
     }
 
     public function isPeriodic()

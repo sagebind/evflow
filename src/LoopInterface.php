@@ -22,7 +22,22 @@ namespace Evflow;
  */
 interface LoopInterface
 {
-    public function getDevices();
+    /**
+     * Binds an event device instance to a type, or to itself if no
+     * interface is specified.
+     *
+     * @param EventDeviceInterface $instance The object instance to bind.
+     * @param string               $type     The type to bind to.
+     */
+    public function bindDevice(EventDeviceInterface $instance, $type = null);
+
+    /**
+     * Fetches an event device bound to a given type.
+     *
+     * @param  string               $type The type name to fetch.
+     * @return EventDeviceInterface       The device instance bound to the given type.
+     */
+    public function fetchDevice($type);
 
     /**
      * Schedules a callback to be executed in the future.
@@ -43,6 +58,13 @@ interface LoopInterface
      * @param callable $callback
      */
     public function nextTick(callable $callback);
+
+    /**
+     * Checks if the event loop is currently running.
+     *
+     * @return bool True if the event loop is running, otherwise false.
+     */
+    public function isRunning();
 
     /**
      * Executes a single iteration of the event loop.

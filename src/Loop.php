@@ -18,20 +18,22 @@
 namespace Evflow;
 
 /**
- * Singleton static class that manages a default, global event loop.
+ * Facade for accessing the global event loop.
  */
-final class DefaultLoop
+final class Loop
 {
     /**
      * The event loop instance being used as the default loop.
-     * @type LoopInterface
+     *
+     * @var LoopInterface
      */
     private static $loopInstance;
 
     /**
      * Indicates if the event loop should automatically begin running at the
      * end of the current process' main code execution.
-     * @type boolean
+     *
+     * @var boolean
      */
     private static $autoStart = true;
 
@@ -70,6 +72,7 @@ final class DefaultLoop
         if (!self::$loopInstance) {
             self::init();
         }
+
         return self::$loopInstance;
     }
 
@@ -90,11 +93,27 @@ final class DefaultLoop
     }
 
     /**
+     * Executes a single iteration of the event loop.
+     */
+    public static function tick()
+    {
+        self::instance()->tick();
+    }
+
+    /**
      * Runs all tasks in the global event loop.
      */
     public static function run()
     {
         self::instance()->run();
+    }
+
+    /**
+     * Stops the event loop execution.
+     */
+    public function stop()
+    {
+        self::instance()->stop();
     }
 
     // prevents instantiation

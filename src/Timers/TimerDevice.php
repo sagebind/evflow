@@ -17,12 +17,13 @@
 
 namespace Evflow\Timers;
 
-use Evflow\EventDeviceBase;
+use Evflow\EventDeviceInterface;
+use Evflow\LoopInterface;
 
 /**
  * Event device for scheduling timers to be triggered at certain time intervals.
  */
-class TimerDevice extends EventDeviceBase
+class TimerDevice implements EventDeviceInterface
 {
     const MICROSECONDS_PER_SECOND = 1000000;
 
@@ -30,6 +31,9 @@ class TimerDevice extends EventDeviceBase
     private $timerQueue;
     private $currentTime;
 
+    /**
+     * Creates a new timer event device instance.
+     */
     public function __construct()
     {
         $this->timers = new \SplObjectStorage();
@@ -50,12 +54,11 @@ class TimerDevice extends EventDeviceBase
     }
 
     /**
-     * [poll description]
-     * @return [type] [description]
+     * Polls the event device to process new incoming events.
      *
      * @see http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod#The_special_problem_of_being_too_ear
      */
-    public function poll($timeout)
+    public function poll(LoopInterface $loop, $timeout)
     {
         // update internal clock
         $this->updateTime();
@@ -79,7 +82,7 @@ class TimerDevice extends EventDeviceBase
             // if the target time has passed, call the callback
             if ($this->currentTime > $this->timers[$timer]) {
                 // add callback to future tick queue
-                $this->getLoop()->futureTick(function () use ($timer) {
+                $loop->futureTick(function () use ($timer) {
                     $callback = $timer->getCallback();
                     $callback();
                 });
