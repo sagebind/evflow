@@ -99,6 +99,16 @@ final class Loop
     }
 
     /**
+     * Checks if the event loop is currently running.
+     *
+     * @return bool True if the event loop is running, otherwise false.
+     */
+    public static function isRunning()
+    {
+        return self::instance()->isRunning();
+    }
+
+    /**
      * Executes a single iteration of the event loop.
      */
     public static function tick()

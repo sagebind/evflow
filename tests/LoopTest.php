@@ -57,7 +57,16 @@ class LoopTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(LoopInterface::class, Loop::instance());
     }
 
-    public function testTick()
+    public function testIsRunningIsCalled()
+    {
+        $this->loop->expects($this->once())
+                   ->method('isRunning');
+
+        Loop::init($this->loop);
+        Loop::isRunning();
+    }
+
+    public function testTickIsCalled()
     {
         $this->loop->expects($this->once())
                    ->method('tick');
@@ -66,7 +75,7 @@ class LoopTest extends \PHPUnit_Framework_TestCase
         Loop::tick();
     }
 
-    public function testRun()
+    public function testRunIsCalled()
     {
         $this->loop->expects($this->once())
                    ->method('run');
@@ -75,7 +84,7 @@ class LoopTest extends \PHPUnit_Framework_TestCase
         Loop::run();
     }
 
-    public function testStop()
+    public function testStopIsCalled()
     {
         $this->loop->expects($this->once())
                    ->method('stop');
