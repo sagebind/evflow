@@ -33,7 +33,7 @@ final class Loop
      * Indicates if the event loop should automatically begin running at the
      * end of the current process' main code execution.
      *
-     * @var boolean
+     * @var bool
      */
     private static $autoStart = true;
 
@@ -49,7 +49,13 @@ final class Loop
      */
     public static function init(LoopInterface $loop = null)
     {
-        self::$loopInstance = !!$loop ? $loop : new EventLoop();
+        // check if the loop was already initialized
+        if (self::$loopInstance instanceof LoopInterface) {
+            throw new LoopInitializedException('Loop already initialized.');
+        }
+
+        // use the given instance, or create a new one if none given
+        self::$loopInstance = !!$loop ? $loop : new NativeLoop();
 
         // run the global event loop just before the program exits
         register_shutdown_function(function () {
