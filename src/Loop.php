@@ -117,7 +117,7 @@ final class Loop
     /**
      * Stops the event loop execution.
      */
-    public function stop()
+    public static function stop()
     {
         self::instance()->stop();
     }
