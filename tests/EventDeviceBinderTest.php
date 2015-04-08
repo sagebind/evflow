@@ -15,7 +15,7 @@
  * under the License.
  */
 
-namespace evflow\tests;
+namespace Evflow\Tests;
 
 use Evflow\EventDeviceBinder;
 use Evflow\EventDeviceInterface;
