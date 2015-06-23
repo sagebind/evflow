@@ -7,6 +7,8 @@
 [![License](http://img.shields.io/badge/license-Apache--2.0-b57edc.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Scrutinizer Issues](http://img.shields.io/badge/scrutinizer-issues-blue.svg?style=flat)](https://scrutinizer-ci.com/g/evflow/evflow/issues/master)
 
+**Notice: This project *isn't* abandoned! We are in the process of developing a redesigned architecture that will make Evflow more powerful and practical and that uses new features in PHP 5.6 and 7. An early implementation will be pushed here once the new system has been fully developed.**
+
 Evflow (/ˈɛvfloʊ/) is an open-source project with the goal of bringing powerful and extensible asynchronous programming features to vanilla PHP. It is taken from many lessons learned from other attempts at asynchronous programming in PHP and other languages as well. Much thanks is owed to the [ReactPHP](http://reactphp.org) team.
 
 Evflow is currently experimental and not recommended for production-level projects.
