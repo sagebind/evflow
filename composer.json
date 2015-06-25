@@ -1,5 +1,5 @@
 {
-    "name": "evflow/evflow",
+    "name": "zephyr/reactor",
     "description": "Open and extensible event loop library for asynchronous programming in PHP",
     "type": "library",
     "license": "Apache-2.0",
@@ -13,8 +13,7 @@
     "require": {
         "evenement/evenement": "2.0.*",
         "php": ">=5.5.0",
-        "psr/log": "~1.0",
-        "react/promise": "~2.1"
+        "psr/log": "~1.0"
     },
     "require-dev": {
         "monolog/monolog": "~1.12",
@@ -22,15 +21,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Evflow\\": "src"
-        },
-        "files": [
-            "src/functions.php"
-        ]
+            "Zephyr\\Reactor": "src"
+        }
     },
     "autoload-dev": {
         "psr-4": {
-            "Evflow\\Tests\\": "tests"
+            "Zephyr\\Reactor\\Tests\\": "tests"
         }
     }
 }
