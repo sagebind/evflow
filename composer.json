@@ -1,7 +1,7 @@
 {
-    "name": "zephyr/reactor",
-    "description": "Open and extensible event loop library for asynchronous programming in PHP",
-    "type": "library",
+    "name": "zephyr/event-loop",
+    "description": "Event loop core library with support for evented I/O, timers, callbacks, and custom sources",
+    "keywords": ["async", "asynchronous", "event", "network", "io", "reactor"],
     "license": "Apache-2.0",
     "authors": [
         {
@@ -11,7 +11,6 @@
         }
     ],
     "require": {
-        "evenement/evenement": "2.0.*",
         "php": ">=5.5.0",
         "psr/log": "~1.0"
     },
@@ -19,14 +18,20 @@
         "monolog/monolog": "~1.12",
         "phpunit/phpunit": "~4.0"
     },
+    "suggest": {
+        "ext-ev": "Enables the libev backend.",
+        "ext-event": "Enables the libevent backend.",
+        "ext-pcntl": "Enables native process signal handling.",
+        "ext-uv": "Enables the libuv backend."
+    },
     "autoload": {
         "psr-4": {
-            "Zephyr\\Reactor": "src"
+            "Zephyr\\EventLoop\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Zephyr\\Reactor\\Tests\\": "tests"
+            "Zephyr\\EventLoop\\Tests\\": "tests"
         }
     }
 }
