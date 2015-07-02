@@ -42,14 +42,6 @@ The goal of this project is to (eventually) create a usable, stable, and fast ev
 - POSIX process signals & interrupts
 - [The many excellent ideas](http://wiki.dlang.org/Event_system) the D language community has for their own language; some of which could be borrowed
 
-## Things to be done
-This is a list of things that we need to do still to get this project really going.
-
-- [ ] Publicly announce Evflow (I see you reading this before the announcement! May be a bit of time yet.)
-- [ ] Create an interface package for interoperability purposes
-- [ ] Create an event stream implementation
-- [ ] Create an example asynchronous I/O package
-
 ## I want to use it now!
 Here is how to use the current version of the code if you want to play around.
 
