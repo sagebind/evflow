@@ -15,7 +15,7 @@
  * under the License.
  */
 
-namespace Evflow;
+namespace Zephyr\EventLoop;
 
 /**
  * Package-level exception interface.

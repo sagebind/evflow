@@ -15,8 +15,29 @@
  * under the License.
  */
 
-namespace Evflow;
+namespace Zephyr\EventLoop;
 
-class TypeException extends \InvalidArgumentException implements Exception
+class SignalSource implements Source
 {
+    protected $signal;
+
+    public function __construct($signal)
+    {
+        $this->signal = $signal;
+    }
+
+    public function prepare(LoopInterface $loop)
+    {
+        return -1;
+    }
+
+    public function poll(LoopInterface $loop)
+    {
+        return false;
+    }
+
+    public function getSignal()
+    {
+        return $this->signal;
+    }
 }

@@ -15,31 +15,13 @@
  * under the License.
  */
 
-namespace Evflow;
+namespace Zephyr\EventLoop;
 
 /**
  * A generic loop interface that supports execution control and a task double queue.
  */
 interface LoopInterface
 {
-    /**
-     * Binds an event device instance to a type, or to itself if no
-     * interface is specified.
-     *
-     * @param EventDeviceInterface $instance The object instance to bind.
-     * @param string               $type     The type to bind to.
-     */
-    public function bindDevice(EventDeviceInterface $instance, $type = null);
-
-    /**
-     * Fetches an event device bound to a given type.
-     *
-     * @param string $type The type name to fetch.
-     *
-     * @return EventDeviceInterface The device instance bound to the given type.
-     */
-    public function fetchDevice($type);
-
     /**
      * Schedules a callback to be executed in the future.
      *
@@ -61,6 +43,24 @@ interface LoopInterface
     public function nextTick(callable $callback);
 
     /**
+     * Attaches an event source to the event loop, with an attached callback.
+     *
+     * An attached source will begin to be checked for events as soon as the
+     * event loop begins ticking.
+     *
+     * @param Source   $source   The event source object to attach.
+     * @param callable $callback A callback to invoke when the source triggers.
+     */
+    public function attachSource(Source $source, callable $callback);
+
+    /**
+     * Detaches an event source from the event loop.
+     *
+     * @param Source $source The event source to detach.
+     */
+    public function detachSource(Source $source);
+
+    /**
      * Checks if the event loop is currently running.
      *
      * @return bool True if the event loop is running, otherwise false.
@@ -69,8 +69,11 @@ interface LoopInterface
 
     /**
      * Executes a single iteration of the event loop.
+     *
+     * @param bool $mayBlock Specifies if the tick is allowed to block the thread
+     *                       to wait for events.
      */
-    public function tick();
+    public function tick($mayBlock = false);
 
     /**
      * Runs the event loop until there are no more events to process.

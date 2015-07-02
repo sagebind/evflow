@@ -15,25 +15,20 @@
  * under the License.
  */
 
-namespace Evflow;
+namespace Zephyr\EventLoop;
 
 /**
  * Facade for accessing the global event loop.
  */
-final class Loop
+final class MainLoop
 {
     /**
-     * The event loop instance being used as the default loop.
-     *
-     * @var LoopInterface
+     * @var LoopInterface The event loop instance being used as the main loop.
      */
     private static $loopInstance;
 
     /**
-     * Indicates if the event loop should automatically begin running at the
-     * end of the current process' main code execution.
-     *
-     * @var bool
+     * @var bool Indicates autostart is enabled.
      */
     private static $autoStart = true;
 
@@ -50,12 +45,12 @@ final class Loop
     public static function init(LoopInterface $loop = null)
     {
         // check if the loop was already initialized
-        if (self::$loopInstance instanceof LoopInterface) {
+        if (self::$loopInstance) {
             throw new LoopInitializedException('Loop already initialized.');
         }
 
         // use the given instance, or create a new one if none given
-        self::$loopInstance = !!$loop ? $loop : new NativeLoop();
+        self::$loopInstance = !!$loop ? $loop : LoopFactory::create();
 
         // run the global event loop just before the program exits
         register_shutdown_function(function () {
@@ -84,6 +79,9 @@ final class Loop
 
     /**
      * Enables the automatic execution of the event loop at the end of the current thread.
+     *
+     * if enabled, the event loop will automatically begin running at the end of
+     * the current process' main code execution.
      */
     public static function enableAutoStart()
     {
@@ -110,10 +108,13 @@ final class Loop
 
     /**
      * Executes a single iteration of the event loop.
+     *
+     * @param bool $mayBlock Specifies if the tick is allowed to block the thread
+     *                       to wait for events.
      */
-    public static function tick()
+    public static function tick($mayBlock = false)
     {
-        self::instance()->tick();
+        self::instance()->tick($mayBlock);
     }
 
     /**
@@ -132,8 +133,12 @@ final class Loop
         self::instance()->stop();
     }
 
-    // prevents instantiation
+    // Prevents= instantiation.
     private function __construct()
     {
     }
+}
+
+class LoopInitializedException extends \LogicException implements Exception
+{
 }

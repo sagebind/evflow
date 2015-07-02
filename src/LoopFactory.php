@@ -15,8 +15,29 @@
  * under the License.
  */
 
-namespace Evflow;
+namespace Zephyr\EventLoop;
 
-class LoopInitializedException extends \LogicException implements Exception
+/**
+ * Creates new event loop instances.
+ */
+class LoopFactory
 {
+    /**
+     * Creates a new event loop instance based on the available extensions.
+     *
+     * @return LoopInterface A new event loop instance.
+     */
+    public static function create()
+    {
+        /* @TODO
+        if (extension_loaded('uv')) {
+            return new LibUvLoop();
+        } elseif (extension_loaded('ev')) {
+            return new LibEvLoop();
+        } elseif (extension_loaded('event')) {
+            return new LibEventLoop();
+        } */
+
+        return new SelectLoop();
+    }
 }
